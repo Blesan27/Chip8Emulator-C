@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdint.h>
+#include<stdlib.h>
 
 #define FONTSET_SIZE 80
 #define FONTSET_START_ADDRESS 0x50
@@ -203,7 +204,7 @@
         uint8_t Vx = (opcode & 0x0F00u) >> 8u;
         uint8_t byte = opcode & 0x00FFu;
 
-        registers[Vx] = randByte(ran()) & byte;
+        registers[Vx] = (rand()%225) & byte;
     }
 
     void OP_Dxyn(){
