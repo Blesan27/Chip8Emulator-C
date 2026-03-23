@@ -1,18 +1,24 @@
 #include<stdio.h>
 #include<stdint.h>
 #include<stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+#include <windows.h>
+#include "SDL3\SDL.h"
+#include "SDL3\SDL_oldnames.h"
+
 
 #define FONTSET_SIZE 80
 #define FONTSET_START_ADDRESS 0x50
 
-#define VIDEO_WIDTH 32
-#define VIDEO_HEIGHT 64
+#define VIDEO_WIDTH 64
+#define VIDEO_HEIGHT 32
 
 
 
     int registers[16];
     wchar_t memory[4098];
-    int index;
+    uint16_t index;
     uint16_t pc;
     int stack[16];
     int sp;
@@ -22,22 +28,37 @@
     int video[64*32];
     int opcode;
 
+    void printMemory(){
+        for(int i = 0; i < 4096; i++){
+            printf("%02hX ", memory[i]);
+            //printf("\n %d : %02hX ",i , memory[i]);
+            if( i%50 == 0) printf("\n");    
+        }
+        printf("\n");
+    }
+
 //Instruction Functions
 
 #pragma region InstructionsFunction
 
     void OP_00E0(){
         memset(video, 0, sizeof(video));
+        printf("\n executing OP_00E0");
+        printf("\n setting video to 0\n");
     }
 
     void OP_00EE(){
         --sp;
         pc = stack[sp];
+        printf("\n exeuting OP_00EE");
+        printf("\n exeuting decreasin Stack pointer, current value %d\n", sp);
     }
 
     void OP_1nnn(){
         uint16_t address = opcode & 0x0FFFu;
         pc = address;
+        printf("\n executing OP_1nnn");
+        printf("\n jumping to %02hX\n",address);
     }
 
     void OP_2nnn(){
@@ -46,6 +67,8 @@
         stack[sp] = pc;
         ++sp;
         pc = address;
+        printf("\n exeuting OP_2nnn");
+        printf("\n pushing current pc to stack and current pc is %02hX\n", pc);
     }
 
     void OP_3xkk(){
@@ -56,6 +79,8 @@
         {
             pc += 2;
         }
+        printf("\n executing OP_3xkk");
+        printf("\n increasing pc+=2 if Vx==byte: byte %d\n",byte);
     }
 
     void OP_4xkk(){
@@ -66,6 +91,8 @@
         {
             pc += 2;
         }
+        printf("\n executing OP_4xkk");
+        printf("\n increasing pc+=2 if Vx!=byte: byte %d\n",byte);
     }
 
     void OP_5xy0(){
@@ -76,6 +103,8 @@
         {
             pc += 2;
         }
+        printf("\n executing OP_5xy0");
+        printf("\n increasing pc+=2 if Vx==Vy: pc %d\n",pc);
     }
 
     void OP_6xkk(){
@@ -83,6 +112,8 @@
         uint8_t byte = opcode & 0x00FFu;
 
         registers[Vx] = byte;
+        printf("\n executing OP_6xkk");
+        printf("\n setting register Vx to %d\n",byte);
     }
 
     void OP_7xkk(){
@@ -90,6 +121,8 @@
         uint8_t byte = opcode & 0x00FFu;
 
         registers[Vx] += byte;
+        printf("\n executing OP_7xkk");
+        printf("\n Adding %d to register Vx and resulted in \n",byte, registers[Vx]);
     }
 
     void OP_8xy0(){
@@ -97,6 +130,8 @@
         uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
         registers[Vx] = registers[Vy];
+        printf("\n executing OP_8xy0");
+        printf("\n setting register Vx with Vy to %d\n",registers[Vy]);
     }
 
     void OP_8xy1(){
@@ -104,6 +139,8 @@
         uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
         registers[Vx] |= registers[Vy];
+        printf("\n executing OP_8xy1");
+        printf("\n OR Vx with Vy and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xy2(){
@@ -111,6 +148,8 @@
         uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
         registers[Vx] &= registers[Vy];
+        printf("\n executing OP_8xy2");
+        printf("\n And Vx with Vy and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xy3(){
@@ -118,6 +157,8 @@
         uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
         registers[Vx] ^= registers[Vy];
+        printf("\n executing OP_8xy3");
+        printf("\n XOR Vx with Vy and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xy4(){
@@ -133,6 +174,9 @@
         }
 
         registers[Vx] = sum & 0xFFu;
+
+        printf("\n executing OP_8xy4");
+        printf("\n Adding Vx with Vy and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xy5(){
@@ -146,6 +190,8 @@
         }
 
         registers[Vx] -= registers[Vy];
+        printf("\n executing OP_8xy5");
+        printf("\n subtracting Vx = Vx - Vy and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xy6(){
@@ -155,6 +201,8 @@
         registers[0xF] = (registers[Vx] & 0x1u);
 
         registers[Vx] >>= 1;
+        printf("\n executing OP_8xy6");
+        printf("\n leftshift Vx by 1 and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xy7(){
@@ -168,6 +216,9 @@
         }
 
         registers[Vx] = registers[Vy] - registers[Vx];
+
+        printf("\n executing OP_8xy7");
+        printf("\n Subtracting Vx = Vy -Vx and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xyE(){
@@ -177,6 +228,8 @@
         registers[0xF] = (registers[Vx] & 0x80u) >> 7u;
 
         registers[Vx] <<= 1;
+        printf("\n executing OP_8xyE");
+        printf("\n rightShit Vx by 1 and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_9xy0(){
@@ -186,18 +239,26 @@
         if (registers[Vx] != registers[Vy]){
             pc += 2;
         }
+        printf("\n executing OP_9xy0");
+        printf("\n if Vx!=Vy, then pc+=1, pc result : %d\n",pc);
     }
 
     void OP_Annn(){
         uint16_t address = opcode & 0x0FFFu;
 
+        printf(" opcode & 0x0FFFu : %d - %0x", opcode & 0x0FFFu , opcode & 0x0FFFu );
+
         index = address;
+        printf("\n executing OP_Annn");
+        printf("\n setting index with address : index : %d\n",index);
     }
 
     void OP_Bnnn(){
         uint16_t address = opcode & 0x0FFFu;
 
         pc = registers[0] + address;
+        printf("\n executing OP_Bnnn");
+        printf("\n register 0 + address and store in Pc, result of pc : %d\n",pc);
     }
 
     void OP_Cxkk(){
@@ -205,6 +266,8 @@
         uint8_t byte = opcode & 0x00FFu;
 
         registers[Vx] = (rand()%225) & byte;
+        printf("\n executing OP_Cxkk");
+        printf("\n assign rand value to Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_Dxyn(){
@@ -212,11 +275,39 @@
         uint8_t Vy = (opcode & 0x00F0u) >> 4u;
         uint8_t height = opcode & 0x000Fu;
 
+        
+        printf("\n executing OP_Dxyn");
+        printf("\n ================================================================Setting video buffer with value, result : %d\n",registers[Vx]);
+
         // Wrap if going beyond screen boundaries
         uint8_t xPos = registers[Vx] % VIDEO_WIDTH;
         uint8_t yPos = registers[Vy] % VIDEO_HEIGHT;
 
         registers[0xF] = 0;
+        //printMemory();
+        printf("before updating video array : xPos, %d: yPos : %d, Vx : %d, Vy : %d , index : %d\n", xPos, yPos, registers[Vx], registers[Vy], index);
+        for (unsigned int row = 0; row < height; ++row){
+            uint8_t spriteByte = memory[index + row];
+
+            for (unsigned int col = 0; col < 8; ++col){
+                uint8_t spritePixel = spriteByte & (0x80u >> col);
+                uint32_t* screenPixel = &video[(yPos + row) * VIDEO_WIDTH + (xPos + col)];
+                printf(" %d ", video[(yPos + row) * VIDEO_WIDTH + (xPos + col)]);
+                
+            }
+            printf("\n");
+        }
+        printf("\nSprite Pixel \n");
+        for (unsigned int row = 0; row < height; ++row){
+            uint8_t spriteByte = memory[index + row];
+            printf("\nByte : %d", spriteByte);
+            for (unsigned int col = 0; col < 8; ++col){
+                uint8_t spritePixel = spriteByte & (0x80u >> col);
+                printf(" %d ", spritePixel);
+                
+            }
+            printf("\n");
+        }
 
         for (unsigned int row = 0; row < height; ++row){
             uint8_t spriteByte = memory[index + row];
@@ -237,6 +328,20 @@
                 }
             }
         }
+        printf("\nAfter updating video array \n");
+        for (unsigned int row = 0; row < height; ++row){
+            uint8_t spriteByte = memory[index + row];
+
+            for (unsigned int col = 0; col < 8; ++col){
+                uint8_t spritePixel = spriteByte & (0x80u >> col);
+                uint32_t* screenPixel = &video[(yPos + row) * VIDEO_WIDTH + (xPos + col)];
+                printf(" %d ", video[(yPos + row) * VIDEO_WIDTH + (xPos + col)]);
+                
+            }
+            printf("\n");
+        }
+        printf("\n executing OP_Dxyn");
+        printf("\n ================================================================Setting video buffer with value, result : %d\n",registers[Vx]);
     }
 
     void OP_Ex9E(){
@@ -247,6 +352,8 @@
         if (keypad[key]){
             pc += 2;
         }
+        printf("\n executing OP_Ex9E");
+        printf("\n if keypad do pc+=2, pc result : %d\n",pc);
     }
 
     void OP_ExA1(){
@@ -257,12 +364,16 @@
         if (!keypad[key]){
             pc += 2;
         }
+        printf("\n executing OP_Ex9E");
+        printf("\n if ! keypad do pc+=2, pc result : %d\n",pc);
     }
 
     void OP_Fx07(){
         uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 
         registers[Vx] = delayTimer;
+        printf("\n executing OP_Fx07");
+        printf("\n setting Vx with delayTime : register Vx %d\n",registers[Vx]);
     }
 
     void OP_Fx0A(){
@@ -303,24 +414,33 @@
         }else{
             pc -= 2;
         }
+
+        printf("\n executing OP_Fx0A");
+        printf("\n capturing keypad and setting it in Vx register : Vx %d\n",registers[Vx]);
     }
 
     void OP_Fx15(){
         uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 
         delayTimer = registers[Vx];
+        printf("\n executing OP_Fx15");
+        printf("\n setting delay timer from Vx register : delayTime %d\n",delayTimer);
     }
 
     void OP_Fx18(){
         uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 
         soundTimer = registers[Vx];
+        printf("\n executing OP_Fx18");
+        printf("\n setting sound timer from Vx register : %d\n",soundTimer);
     }
 
     void OP_Fx1E(){
         uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 
         index += registers[Vx];
+        printf("\n executing OP_Fx1E");
+        printf("\n setting index with += Vx register : index %d\n",index);
     }
 
     void OP_Fx29(){
@@ -328,6 +448,8 @@
         uint8_t digit = registers[Vx];
 
         index = FONTSET_START_ADDRESS + (5 * digit);
+        printf("\n executing OP_Fx29");
+        printf("\n setting index with digit from Vx register : digit %d\n",digit);
     }
 
     void OP_Fx33(){
@@ -344,6 +466,9 @@
 
         // Hundreds-place
         memory[index] = value % 10;
+        
+        printf("\n executing OP_Fx33");
+        printf("\n Store BCD representation of Vx in memory locations I, I+1, and I+2 : value %d\n",value);
     }
 
     void OP_Fx55(){
@@ -353,6 +478,8 @@
         {
             memory[index + i] = registers[i];
         }
+        printf("\n executing OP_Fx55");
+        printf("\n assigning memory from index to index+Vx with registers till Vx : Vx address %02hX\n",Vx);
     }
 
     void OP_Fx65(){
@@ -361,6 +488,8 @@
         for (uint8_t i = 0; i <= Vx; ++i){
             registers[i] = memory[index + i];
         }
+        printf("\n executing OP_Fx65");
+        printf("\n assigning registers from 1 to Vx with memory starting from index : starting address %02hX\n",Vx);
     }
     
 #pragma endregion
@@ -391,22 +520,186 @@
         (*(tableF[opcode & 0x00FFu]))();
     }
 
-    void OP_NULL(){}
+    void OP_NULL(){
+        printf("\nNULLLLLLLLL");
+    }
 
 #pragma endregion
     
+#pragma region ProcessInput
+
+    bool ProcessInput(uint8_t* keys){
+		bool quit = false;
+		SDL_Event event;
+		while (SDL_PollEvent(&event)){
+			switch (event.type){
+				case SDL_EVENT_QUIT:{
+					quit = true;
+				} break;
+
+				case SDL_EVENT_KEY_DOWN:{
+					switch (event.key.key){
+						case SDLK_ESCAPE:{
+							quit = true;
+						} break;
+
+						case SDLK_X:{
+							keys[0] = 1;
+						} break;
+
+						case SDLK_1:{
+							keys[1] = 1;
+						} break;
+
+						case SDLK_2:{
+							keys[2] = 1;
+						} break;
+
+						case SDLK_3:{
+							keys[3] = 1;
+						} break;
+
+						case SDLK_Q:{
+							keys[4] = 1;
+						} break;
+
+						case SDLK_W:{
+							keys[5] = 1;
+						} break;
+
+						case SDLK_E:{
+							keys[6] = 1;
+						} break;
+
+						case SDLK_A:{
+							keys[7] = 1;
+						} break;
+
+						case SDLK_S:{
+							keys[8] = 1;
+						} break;
+
+						case SDLK_D:{
+							keys[9] = 1;
+						} break;
+
+						case SDLK_Z:{
+							keys[0xA] = 1;
+						} break;
+
+						case SDLK_C:{
+							keys[0xB] = 1;
+						} break;
+
+						case SDLK_4:{
+							keys[0xC] = 1;
+						} break;
+
+						case SDLK_R:{
+							keys[0xD] = 1;
+						} break;
+
+						case SDLK_F:{
+							keys[0xE] = 1;
+						} break;
+
+						case SDLK_V:{
+							keys[0xF] = 1;
+						} break;
+					}
+				} break;
+
+				case SDL_EVENT_KEY_UP:{
+					switch (event.key.key){
+						case SDLK_X:{
+							keys[0] = 0;
+						} break;
+
+						case SDLK_1:{
+							keys[1] = 0;
+						} break;
+
+						case SDLK_2:{
+							keys[2] = 0;
+						} break;
+
+						case SDLK_3:{
+							keys[3] = 0;
+						} break;
+
+						case SDLK_Q:{
+							keys[4] = 0;
+						} break;
+
+						case SDLK_W:{
+							keys[5] = 0;
+						} break;
+
+						case SDLK_E:{
+							keys[6] = 0;
+						} break;
+
+						case SDLK_A:{
+							keys[7] = 0;
+						} break;
+
+						case SDLK_S:{
+							keys[8] = 0;
+						} break;
+
+						case SDLK_D:{
+							keys[9] = 0;
+						} break;
+
+						case SDLK_Z:{
+							keys[0xA] = 0;
+						} break;
+
+						case SDLK_C:{
+							keys[0xB] = 0;
+						} break;
+
+						case SDLK_4:{
+							keys[0xC] = 0;
+						} break;
+
+						case SDLK_R:{
+							keys[0xD] = 0;
+						} break;
+
+						case SDLK_F:{
+							keys[0xE] = 0;
+						} break;
+
+						case SDLK_V:{
+							keys[0xF] = 0;
+						} break;
+					}
+				} break;
+			}
+		}
+
+		return quit;
+	}
+
+#pragma endregion
+
 
 //CPU Cycle
 void Cycle(){
 	// Fetch
 	opcode = (memory[pc] << 8u) | memory[pc + 1];
 
+    printf("\n Extracted opCode \n");
+    printf("%02hX ", opcode);
+    printf("\n%02hX ", (opcode & 0xF000u) >> 12u);
 	// Increment the PC before we execute anything
 	pc += 2;
 
 	// Decode and Execute
 	(*(table[(opcode & 0xF000u) >> 12u]))();
-
+    
+    printf("Exceuted Function\n");
 	// Decrement the delay timer if it's been set
 	if (delayTimer > 0)
 	{
@@ -418,18 +711,29 @@ void Cycle(){
 	{
 		--soundTimer;
 	}
+    printf("Exciting Cycle\n");
 }
 
 
 
-    int main(){
+    int main(int argc, int* argv){
         
         int startAddress = 0x200;
         pc = startAddress;
         
+        if (argc != 4){
+		    printf("Usage: <Scale> <Delay> <ROM>\n");
+		    exit(EXIT_FAILURE);
+	    }
         //Loading ROM
     {
-        FILE* rom = fopen(".\\1-chip8-logo.ch8", "r");
+        FILE* rom = fopen(".\\octojam1title.ch8", "rb");
+        // FILE* rom = fopen(".\\1-chip8-logo.ch8", "rb");
+        // FILE* rom = fopen(".\\test_opcode.ch8", "rb");
+        // FILE* rom = fopen(".\\Tetris.ch8", "rb");
+        // FILE* rom = fopen(".\\horseyJump.ch8", "rb");
+        // FILE* rom = fopen(".\\octojam6title.ch8", "rb");
+        // FILE* rom = fopen(".\\knight.ch8", "rb"); // issue when executing this ROM
         
         if(rom == NULL){
             printf("Unable to load ROM file");
@@ -441,24 +745,25 @@ void Cycle(){
             fseek(rom, 0, SEEK_END);
             size = ftell(rom);
             
-            // char buffer[size];
+            char buffer[4096];
             rewind(rom);
             printf(" Memory contents: \n");
-            for(int i = 0; i < 4096; i++){
-                memory[i] = 0;
-                printf("%02hX ", memory[i]);
-                if( i%50 == 0) printf("\n");
+            printMemory();  
+            // fgetws(&memory[startAddress], size, rom);
+            size_t bytesRead = fread(&buffer, 1, size, rom);
+
+            for (long i = 0; i < size; ++i) {
+                memory[startAddress + i] = (uint8_t)buffer[i];
             }
-            printf("\n");
-            fgetws(&memory[startAddress], size, rom);
             
             
             printf("\n\nMemory contents After Loading ROM: \n");
-            for(int i = 0; i < 4096; i++){
-                printf("%02hX ", memory[i]);
-                if( i%50 == 0) printf("\n");
-            }
-            printf("\n");
+            // for(int i = 0; i < 4096; i++){
+            //     printf("%02hX ", memory[i]);
+            //     //printf("\n %d : %02hX ",i , memory[i]);
+            //     if( i%50 == 0) printf("\n");
+            // }
+            printMemory();
             
             printf("\n\nSucessfully Loaded ROM into Memory\n\n");
         }
@@ -490,6 +795,9 @@ void Cycle(){
             memory[FONTSET_START_ADDRESS+i] = fontset[i];
         }
         printf("Loaded Fontset\n");
+
+        printf("\n memory content after loading FONTSET ");
+        printMemory();
     }
 
     // Mapping Table Function pointers
@@ -549,5 +857,96 @@ void Cycle(){
         tableF[0x55] = OP_Fx55;
         tableF[0x65] = OP_Fx65;    
     }
+
+
+    printf("Video Scale initialize with arguments passes");
+	// int videoScale = strtol(argv[1], argv[1], 10);
+	// int cycleDelay = strtol(argv[2], argv[2], 10);
+    int videoScale = 10;
+    int cycleDelay = 1;
+	char const* romFilename = argv[3];
+
+    printf("\n\nCompleted Video Scale initialize with arguments passes");
+
+    // if (SDL_Init(SDL_INIT_VIDEO) == 0) {
+    //     fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+    //     return 1;
+    // }
+    
+    // Create a window
+	//Platform platform("CHIP-8 Emulator", VIDEO_WIDTH * videoScale, VIDEO_HEIGHT * videoScale, VIDEO_WIDTH, VIDEO_HEIGHT);
+
+
+    SDL_Window* window;
+    SDL_Renderer* renderer;
+    SDL_Texture* texture;
+
+    printf("\n\nStarting SDL init");
+    if (SDL_Init(SDL_INIT_VIDEO) == 0) {
+        fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+        return 1;
+    }
+    window = SDL_CreateWindow("Chip8 Emulator", VIDEO_WIDTH*videoScale, VIDEO_HEIGHT*videoScale, 0);
+    printf("\n\n\nCreated SDL Window");
+    renderer = SDL_CreateRenderer(window, NULL);
+    printf("\n\n\nCreated SDL Renderer");
+    texture = SDL_CreateTexture(
+        renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, VIDEO_WIDTH, VIDEO_HEIGHT);
+
+    printf("\n\n\nCreated SDL Window, Rendere, Texture");
+	int videoPitch = sizeof(video[0]) * VIDEO_WIDTH;
+    printf("\n Video Pitch %d",videoPitch);
+
+    bool quit = false;
+
+	while (!quit)
+	{
+        //printf("\nInside Loop");   
+		quit = ProcessInput(keypad);
+
+
+        //Sleep(100);
+		{  
+            // printf("IF -----------------------------------------------------");
+
+			Cycle();
+
+			//platform.Update(video, videoPitch);
+            printf("\nstarting updation");
+            SDL_UpdateTexture(texture, NULL, video, videoPitch);
+            printf("01");
+            SDL_RenderClear(renderer);
+            printf("02");
+            SDL_RenderTexture(renderer, texture, NULL, NULL);
+            printf("03");
+            SDL_RenderPresent(renderer);
+            printf("04");
+            
+            // int videoChanged = 0;
+
+            // for(int i =0 ; i < 64 ; i++){
+            //     for(int j =0; j< 32; j++){
+            //         //printf("%d ", video[(i*32)+j]);
+            //         if(video[(i*32)+j] != 0) videoChanged = 1;
+            //     }
+            //     //printf("\n");
+            // }
+            // if(videoChanged){
+            //     for(int i =0 ; i < 64 ; i++){
+            //         for(int j =0; j< 32; j++){
+            //             printf("%d ", video[(i*32)+j]);
+            //             videoChanged = 1;
+            //         }
+            //         printf("\n");
+            //     }
+            // }
+		}
+	}
+
+    printf("\n\nLoop Exited");
+
+	return 0;
         
 }
+
+//cl.exe .\Emulator.c /FeEmulator.exe /I C:\SDL\include "C:\Users\blesan\Downloads\SDL3-devel-3.4.2-VC\SDL3-3.4.2\lib\x64\SDL3.lib"
