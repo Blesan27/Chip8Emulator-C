@@ -16,17 +16,17 @@
 
 
 
-    int registers[16];
+    uint8_t  registers[16];
     wchar_t memory[4098];
     uint16_t index;
     uint16_t pc;
-    int stack[16];
-    int sp;
-    int delayTimer;
-    int soundTimer;
-    int keypad[16];
-    int video[64*32];
-    int opcode;
+    uint16_t  stack[16];
+    uint8_t  sp;
+    uint8_t  delayTimer;
+    uint8_t  soundTimer;
+    uint8_t  keypad[16];
+    uint32_t  video[64*32];
+    uint16_t  opcode;
 
     void printMemory(){
         for(int i = 0; i < 4096; i++){
@@ -36,21 +36,28 @@
         }
         printf("\n");
     }
+    void printRegisters(){
+        for(int i = 0; i< 16 ; i++){
+            printf(" %d - %d \n", i, registers[i]);
+        }
+    }
 
 //Instruction Functions
 
 #pragma region InstructionsFunction
 
     void OP_00E0(){
+        printf("Starting to set video to 0");
         memset(video, 0, sizeof(video));
         printf("\n executing OP_00E0");
         printf("\n setting video to 0\n");
     }
 
     void OP_00EE(){
+        printf("\n exeuting OP_00EE");
+        printf("\n Current Sp : %d", sp);
         --sp;
         pc = stack[sp];
-        printf("\n exeuting OP_00EE");
         printf("\n exeuting decreasin Stack pointer, current value %d\n", sp);
     }
 
@@ -183,14 +190,19 @@
         uint8_t Vx = (opcode & 0x0F00u) >> 8u;
         uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
+        printf("\n executing OP_8xy5");
+        printf("\n%02hx - %d", opcode, opcode);
+        printf("\n%d - %d ", Vx, Vy);
+        printf("\n%d - %d ", registers[Vx], registers[Vy]);
+
         if (registers[Vx] > registers[Vy]){
             registers[0xF] = 1;
         }else{
             registers[0xF] = 0;
         }
-
+        
         registers[Vx] -= registers[Vy];
-        printf("\n executing OP_8xy5");
+        printf("result - %d , overflow - %d", registers[Vx], registers[0XF]);
         printf("\n subtracting Vx = Vx - Vy and store in Vx, result : %d\n",registers[Vx]);
     }
 
@@ -277,7 +289,7 @@
 
         
         printf("\n executing OP_Dxyn");
-        printf("\n ================================================================Setting video buffer with value, result : %d\n",registers[Vx]);
+        //printf("\n ================================================================Setting video buffer with value, result : %d\n",registers[Vx]);
 
         // Wrap if going beyond screen boundaries
         uint8_t xPos = registers[Vx] % VIDEO_WIDTH;
@@ -285,7 +297,7 @@
 
         registers[0xF] = 0;
         //printMemory();
-        printf("before updating video array : xPos, %d: yPos : %d, Vx : %d, Vy : %d , index : %d\n", xPos, yPos, registers[Vx], registers[Vy], index);
+        printf("\nbefore updating video array : xPos, %d: yPos : %d, Vx : %d, Vy : %d , index : %d\n", xPos, yPos, registers[Vx], registers[Vy], index);
         for (unsigned int row = 0; row < height; ++row){
             uint8_t spriteByte = memory[index + row];
 
@@ -299,6 +311,9 @@
         }
         printf("\nSprite Pixel \n");
         for (unsigned int row = 0; row < height; ++row){
+            if(index+row > 4098){
+                printf("\n\n\n\n EXEEDING MEMORY LENGTH \n\n\n\n\n\n");
+            }
             uint8_t spriteByte = memory[index + row];
             printf("\nByte : %d", spriteByte);
             for (unsigned int col = 0; col < 8; ++col){
@@ -314,6 +329,10 @@
 
             for (unsigned int col = 0; col < 8; ++col){
                 uint8_t spritePixel = spriteByte & (0x80u >> col);
+                if (((yPos + row) * VIDEO_WIDTH + (xPos + col)) > (64*32)){
+                    printf("\n\n\n\n EXEEDING VIDEO LENGTH \n\n\n\n\n\n");
+                    continue;
+                }
                 uint32_t* screenPixel = &video[(yPos + row) * VIDEO_WIDTH + (xPos + col)];
 
                 // Sprite pixel is on
@@ -341,7 +360,7 @@
             printf("\n");
         }
         printf("\n executing OP_Dxyn");
-        printf("\n ================================================================Setting video buffer with value, result : %d\n",registers[Vx]);
+        //printf("\n ================================================================Setting video buffer with value, result : %d\n",registers[Vx]);
     }
 
     void OP_Ex9E(){
@@ -352,8 +371,8 @@
         if (keypad[key]){
             pc += 2;
         }
-        printf("\n executing OP_Ex9E");
-        printf("\n if keypad do pc+=2, pc result : %d\n",pc);
+        printf("\n executing OP_Ex9E"); //***************************************************************************************************************************");
+        printf("\n if keypad do pc+=2, pc result : %d ,key : %d\n",pc, key);
     }
 
     void OP_ExA1(){
@@ -364,8 +383,8 @@
         if (!keypad[key]){
             pc += 2;
         }
-        printf("\n executing OP_Ex9E");
-        printf("\n if ! keypad do pc+=2, pc result : %d\n",pc);
+        printf("\n executing OP_Ex9E");//***************************************************************************************************************************");
+        printf("\n if ! keypad do pc+=2, pc result : %d, Key : %d\n",pc, key);
     }
 
     void OP_Fx07(){
@@ -505,18 +524,22 @@
     Chip8Func tableF[0x65 + 1];
 
     void Table0(){
+        printf("\ncalling %d function in Table0",(opcode & 0x000Fu));
         (*(table0[opcode & 0x000Fu]))();
     }
 
     void Table8(){
+        printf("\ncalling %d function in Table8",(opcode & 0x000Fu));
         (*(table8[opcode & 0x000Fu]))();
     }
 
     void TableE(){
+        printf("\ncalling %d function in TableE",(opcode & 0x000Fu));
         (*(tableE[opcode & 0x000Fu]))();
     }
 
     void TableF(){
+        printf("\ncalling %d function in TableF",(opcode & 0x000Fu));
         (*(tableF[opcode & 0x00FFu]))();
     }
 
@@ -691,7 +714,7 @@ void Cycle(){
 	opcode = (memory[pc] << 8u) | memory[pc + 1];
 
     printf("\n Extracted opCode \n");
-    printf("%02hX ", opcode);
+    printf("%04hX ", opcode);
     printf("\n%02hX ", (opcode & 0xF000u) >> 12u);
 	// Increment the PC before we execute anything
 	pc += 2;
@@ -716,18 +739,24 @@ void Cycle(){
 
 
 
-    int main(int argc, int* argv){
+    int main(int argc, char * argv[]){
         
         int startAddress = 0x200;
         pc = startAddress;
-        
-        if (argc != 4){
-		    printf("Usage: <Scale> <Delay> <ROM>\n");
+        int cycleDelay = 0;
+
+        if (argc < 2){
+		    printf("Usage: <ROM> <option: CycleDelay 1-10>\n");
 		    exit(EXIT_FAILURE);
 	    }
+        char const* romFilename = argv[1];
         //Loading ROM
+        if(argc == 3){
+            cycleDelay =  (argv[2][0] - '0')*100;
+        }
     {
-        FILE* rom = fopen(".\\octojam1title.ch8", "rb");
+        
+        FILE* rom = fopen( romFilename , "rb");
         // FILE* rom = fopen(".\\1-chip8-logo.ch8", "rb");
         // FILE* rom = fopen(".\\test_opcode.ch8", "rb");
         // FILE* rom = fopen(".\\Tetris.ch8", "rb");
@@ -860,21 +889,10 @@ void Cycle(){
 
 
     printf("Video Scale initialize with arguments passes");
-	// int videoScale = strtol(argv[1], argv[1], 10);
-	// int cycleDelay = strtol(argv[2], argv[2], 10);
     int videoScale = 10;
-    int cycleDelay = 1;
-	char const* romFilename = argv[3];
 
     printf("\n\nCompleted Video Scale initialize with arguments passes");
 
-    // if (SDL_Init(SDL_INIT_VIDEO) == 0) {
-    //     fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-    //     return 1;
-    // }
-    
-    // Create a window
-	//Platform platform("CHIP-8 Emulator", VIDEO_WIDTH * videoScale, VIDEO_HEIGHT * videoScale, VIDEO_WIDTH, VIDEO_HEIGHT);
 
 
     SDL_Window* window;
@@ -902,10 +920,11 @@ void Cycle(){
 	while (!quit)
 	{
         //printf("\nInside Loop");   
+        Sleep(cycleDelay);
+        printf("Cycle Delayed by : %d ", cycleDelay);
+
 		quit = ProcessInput(keypad);
 
-
-        //Sleep(100);
 		{  
             // printf("IF -----------------------------------------------------");
 
@@ -940,6 +959,8 @@ void Cycle(){
             //         printf("\n");
             //     }
             // }
+
+            printRegisters();
 		}
 	}
 
