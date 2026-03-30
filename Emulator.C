@@ -28,13 +28,16 @@
     uint32_t  video[64*32];
     uint16_t  opcode;
 
+    uint64_t last_timer_update = 0;
+
+
     void printMemory(){
         for(int i = 0; i < 4096; i++){
             printf("%02hX ", memory[i]);
             //printf("\n %d : %02hX ",i , memory[i]);
             if( i%50 == 0) printf("\n");    
         }
-        printf("\n");
+        //--printf("\n");
     }
     void printRegisters(){
         for(int i = 0; i< 16 ; i++){
@@ -47,25 +50,25 @@
 #pragma region InstructionsFunction
 
     void OP_00E0(){
-        printf("Starting to set video to 0");
+        //--printf("Starting to set video to 0");
         memset(video, 0, sizeof(video));
-        printf("\n executing OP_00E0");
-        printf("\n setting video to 0\n");
+        //--printf("\n executing OP_00E0");
+        //--printf("\n setting video to 0\n");
     }
 
     void OP_00EE(){
-        printf("\n exeuting OP_00EE");
-        printf("\n Current Sp : %d", sp);
+        //--printf("\n exeuting OP_00EE");
+        //--printf("\n Current Sp : %d", sp);
         --sp;
         pc = stack[sp];
-        printf("\n exeuting decreasin Stack pointer, current value %d\n", sp);
+        //--printf("\n exeuting decreasin Stack pointer, current value %d\n", sp);
     }
 
     void OP_1nnn(){
         uint16_t address = opcode & 0x0FFFu;
         pc = address;
-        printf("\n executing OP_1nnn");
-        printf("\n jumping to %02hX\n",address);
+        //--printf("\n executing OP_1nnn");
+        //--printf("\n jumping to %02hX\n",address);
     }
 
     void OP_2nnn(){
@@ -74,8 +77,8 @@
         stack[sp] = pc;
         ++sp;
         pc = address;
-        printf("\n exeuting OP_2nnn");
-        printf("\n pushing current pc to stack and current pc is %02hX\n", pc);
+        //--printf("\n exeuting OP_2nnn");
+        //--printf("\n pushing current pc to stack and current pc is %02hX\n", pc);
     }
 
     void OP_3xkk(){
@@ -86,8 +89,8 @@
         {
             pc += 2;
         }
-        printf("\n executing OP_3xkk");
-        printf("\n increasing pc+=2 if Vx==byte: byte %d\n",byte);
+        //--printf("\n executing OP_3xkk");
+        //--printf("\n increasing pc+=2 if Vx==byte: byte %d\n",byte);
     }
 
     void OP_4xkk(){
@@ -98,8 +101,8 @@
         {
             pc += 2;
         }
-        printf("\n executing OP_4xkk");
-        printf("\n increasing pc+=2 if Vx!=byte: byte %d\n",byte);
+        //--printf("\n executing OP_4xkk");
+        //--printf("\n increasing pc+=2 if Vx!=byte: byte %d\n",byte);
     }
 
     void OP_5xy0(){
@@ -110,8 +113,8 @@
         {
             pc += 2;
         }
-        printf("\n executing OP_5xy0");
-        printf("\n increasing pc+=2 if Vx==Vy: pc %d\n",pc);
+        //--printf("\n executing OP_5xy0");
+        //--printf("\n increasing pc+=2 if Vx==Vy: pc %d\n",pc);
     }
 
     void OP_6xkk(){
@@ -119,8 +122,8 @@
         uint8_t byte = opcode & 0x00FFu;
 
         registers[Vx] = byte;
-        printf("\n executing OP_6xkk");
-        printf("\n setting register Vx to %d\n",byte);
+        //--printf("\n executing OP_6xkk");
+        //--printf("\n setting register Vx to %d\n",byte);
     }
 
     void OP_7xkk(){
@@ -128,8 +131,8 @@
         uint8_t byte = opcode & 0x00FFu;
 
         registers[Vx] += byte;
-        printf("\n executing OP_7xkk");
-        printf("\n Adding %d to register Vx and resulted in \n",byte, registers[Vx]);
+        //--printf("\n executing OP_7xkk");
+        //--printf("\n Adding %d to register Vx and resulted in \n",byte, registers[Vx]);
     }
 
     void OP_8xy0(){
@@ -137,8 +140,8 @@
         uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
         registers[Vx] = registers[Vy];
-        printf("\n executing OP_8xy0");
-        printf("\n setting register Vx with Vy to %d\n",registers[Vy]);
+        //--printf("\n executing OP_8xy0");
+        //--printf("\n setting register Vx with Vy to %d\n",registers[Vy]);
     }
 
     void OP_8xy1(){
@@ -146,8 +149,8 @@
         uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
         registers[Vx] |= registers[Vy];
-        printf("\n executing OP_8xy1");
-        printf("\n OR Vx with Vy and store in Vx, result : %d\n",registers[Vx]);
+        //--printf("\n executing OP_8xy1");
+        //--printf("\n OR Vx with Vy and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xy2(){
@@ -155,8 +158,8 @@
         uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
         registers[Vx] &= registers[Vy];
-        printf("\n executing OP_8xy2");
-        printf("\n And Vx with Vy and store in Vx, result : %d\n",registers[Vx]);
+        //--printf("\n executing OP_8xy2");
+        //--printf("\n And Vx with Vy and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xy3(){
@@ -164,8 +167,8 @@
         uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
         registers[Vx] ^= registers[Vy];
-        printf("\n executing OP_8xy3");
-        printf("\n XOR Vx with Vy and store in Vx, result : %d\n",registers[Vx]);
+        //--printf("\n executing OP_8xy3");
+        //--printf("\n XOR Vx with Vy and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xy4(){
@@ -182,18 +185,18 @@
 
         registers[Vx] = sum & 0xFFu;
 
-        printf("\n executing OP_8xy4");
-        printf("\n Adding Vx with Vy and store in Vx, result : %d\n",registers[Vx]);
+        //--printf("\n executing OP_8xy4");
+        //--printf("\n Adding Vx with Vy and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xy5(){
         uint8_t Vx = (opcode & 0x0F00u) >> 8u;
         uint8_t Vy = (opcode & 0x00F0u) >> 4u;
 
-        printf("\n executing OP_8xy5");
-        printf("\n%02hx - %d", opcode, opcode);
-        printf("\n%d - %d ", Vx, Vy);
-        printf("\n%d - %d ", registers[Vx], registers[Vy]);
+        //--printf("\n executing OP_8xy5");
+        //--printf("\n%02hx - %d", opcode, opcode);
+        //--printf("\n%d - %d ", Vx, Vy);
+        //--printf("\n%d - %d ", registers[Vx], registers[Vy]);
 
         if (registers[Vx] > registers[Vy]){
             registers[0xF] = 1;
@@ -202,8 +205,8 @@
         }
         
         registers[Vx] -= registers[Vy];
-        printf("result - %d , overflow - %d", registers[Vx], registers[0XF]);
-        printf("\n subtracting Vx = Vx - Vy and store in Vx, result : %d\n",registers[Vx]);
+        //--printf("result - %d , overflow - %d", registers[Vx], registers[0XF]);
+        //--printf("\n subtracting Vx = Vx - Vy and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xy6(){
@@ -213,8 +216,8 @@
         registers[0xF] = (registers[Vx] & 0x1u);
 
         registers[Vx] >>= 1;
-        printf("\n executing OP_8xy6");
-        printf("\n leftshift Vx by 1 and store in Vx, result : %d\n",registers[Vx]);
+        //--printf("\n executing OP_8xy6");
+        //--printf("\n leftshift Vx by 1 and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xy7(){
@@ -229,8 +232,8 @@
 
         registers[Vx] = registers[Vy] - registers[Vx];
 
-        printf("\n executing OP_8xy7");
-        printf("\n Subtracting Vx = Vy -Vx and store in Vx, result : %d\n",registers[Vx]);
+        //--printf("\n executing OP_8xy7");
+        //--printf("\n Subtracting Vx = Vy -Vx and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_8xyE(){
@@ -240,8 +243,8 @@
         registers[0xF] = (registers[Vx] & 0x80u) >> 7u;
 
         registers[Vx] <<= 1;
-        printf("\n executing OP_8xyE");
-        printf("\n rightShit Vx by 1 and store in Vx, result : %d\n",registers[Vx]);
+        //--printf("\n executing OP_8xyE");
+        //--printf("\n rightShit Vx by 1 and store in Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_9xy0(){
@@ -251,26 +254,26 @@
         if (registers[Vx] != registers[Vy]){
             pc += 2;
         }
-        printf("\n executing OP_9xy0");
-        printf("\n if Vx!=Vy, then pc+=1, pc result : %d\n",pc);
+        //--printf("\n executing OP_9xy0");
+        //--printf("\n if Vx!=Vy, then pc+=1, pc result : %d\n",pc);
     }
 
     void OP_Annn(){
         uint16_t address = opcode & 0x0FFFu;
 
-        printf(" opcode & 0x0FFFu : %d - %0x", opcode & 0x0FFFu , opcode & 0x0FFFu );
+        //--printf(" opcode & 0x0FFFu : %d - %0x", opcode & 0x0FFFu , opcode & 0x0FFFu );
 
         index = address;
-        printf("\n executing OP_Annn");
-        printf("\n setting index with address : index : %d\n",index);
+        //--printf("\n executing OP_Annn");
+        //--printf("\n setting index with address : index : %d\n",index);
     }
 
     void OP_Bnnn(){
         uint16_t address = opcode & 0x0FFFu;
 
         pc = registers[0] + address;
-        printf("\n executing OP_Bnnn");
-        printf("\n register 0 + address and store in Pc, result of pc : %d\n",pc);
+        //--printf("\n executing OP_Bnnn");
+        //--printf("\n register 0 + address and store in Pc, result of pc : %d\n",pc);
     }
 
     void OP_Cxkk(){
@@ -278,8 +281,8 @@
         uint8_t byte = opcode & 0x00FFu;
 
         registers[Vx] = (rand()%225) & byte;
-        printf("\n executing OP_Cxkk");
-        printf("\n assign rand value to Vx, result : %d\n",registers[Vx]);
+        //--printf("\n executing OP_Cxkk");
+        //--printf("\n assign rand value to Vx, result : %d\n",registers[Vx]);
     }
 
     void OP_Dxyn(){
@@ -288,8 +291,8 @@
         uint8_t height = opcode & 0x000Fu;
 
         
-        printf("\n executing OP_Dxyn");
-        //printf("\n ================================================================Setting video buffer with value, result : %d\n",registers[Vx]);
+        //--printf("\n executing OP_Dxyn");
+        ////--printf("\n ================================================================Setting video buffer with value, result : %d\n",registers[Vx]);
 
         // Wrap if going beyond screen boundaries
         uint8_t xPos = registers[Vx] % VIDEO_WIDTH;
@@ -297,31 +300,35 @@
 
         registers[0xF] = 0;
         //printMemory();
-        printf("\nbefore updating video array : xPos, %d: yPos : %d, Vx : %d, Vy : %d , index : %d\n", xPos, yPos, registers[Vx], registers[Vy], index);
+        //--printf("\nbefore updating video array : xPos, %d: yPos : %d, Vx : %d, Vy : %d , index : %d\n", xPos, yPos, registers[Vx], registers[Vy], index);
         for (unsigned int row = 0; row < height; ++row){
             uint8_t spriteByte = memory[index + row];
 
             for (unsigned int col = 0; col < 8; ++col){
                 uint8_t spritePixel = spriteByte & (0x80u >> col);
+                if (((yPos + row) * VIDEO_WIDTH + (xPos + col)) > (64*32)){
+                    //printf("\n\n\n\n EXEEDING VIDEO LENGTH \n\n\n\n\n\n");
+                    continue;
+                }
                 uint32_t* screenPixel = &video[(yPos + row) * VIDEO_WIDTH + (xPos + col)];
-                printf(" %d ", video[(yPos + row) * VIDEO_WIDTH + (xPos + col)]);
+                //--printf(" %d ", video[(yPos + row) * VIDEO_WIDTH + (xPos + col)]);
                 
             }
-            printf("\n");
+            //--printf("\n");
         }
-        printf("\nSprite Pixel \n");
+        //--printf("\nSprite Pixel \n");
         for (unsigned int row = 0; row < height; ++row){
             if(index+row > 4098){
-                printf("\n\n\n\n EXEEDING MEMORY LENGTH \n\n\n\n\n\n");
+                //printf("\n\n\n\n EXEEDING MEMORY LENGTH \n\n\n\n\n\n");
             }
             uint8_t spriteByte = memory[index + row];
-            printf("\nByte : %d", spriteByte);
+            //--printf("\nByte : %d", spriteByte);
             for (unsigned int col = 0; col < 8; ++col){
                 uint8_t spritePixel = spriteByte & (0x80u >> col);
-                printf(" %d ", spritePixel);
+                //--printf(" %d ", spritePixel);
                 
             }
-            printf("\n");
+            //--printf("\n");
         }
 
         for (unsigned int row = 0; row < height; ++row){
@@ -330,7 +337,7 @@
             for (unsigned int col = 0; col < 8; ++col){
                 uint8_t spritePixel = spriteByte & (0x80u >> col);
                 if (((yPos + row) * VIDEO_WIDTH + (xPos + col)) > (64*32)){
-                    printf("\n\n\n\n EXEEDING VIDEO LENGTH \n\n\n\n\n\n");
+                    //printf("\n\n\n\n EXEEDING VIDEO LENGTH \n\n\n\n\n\n");
                     continue;
                 }
                 uint32_t* screenPixel = &video[(yPos + row) * VIDEO_WIDTH + (xPos + col)];
@@ -347,20 +354,24 @@
                 }
             }
         }
-        printf("\nAfter updating video array \n");
+        //--printf("\nAfter updating video array \n");
         for (unsigned int row = 0; row < height; ++row){
             uint8_t spriteByte = memory[index + row];
 
             for (unsigned int col = 0; col < 8; ++col){
                 uint8_t spritePixel = spriteByte & (0x80u >> col);
+                if (((yPos + row) * VIDEO_WIDTH + (xPos + col)) > (64*32)){
+                    //--printf("\n\n\n\n EXEEDING VIDEO LENGTH \n\n\n\n\n\n");
+                    continue;
+                }
                 uint32_t* screenPixel = &video[(yPos + row) * VIDEO_WIDTH + (xPos + col)];
-                printf(" %d ", video[(yPos + row) * VIDEO_WIDTH + (xPos + col)]);
+                //--printf(" %d ", video[(yPos + row) * VIDEO_WIDTH + (xPos + col)]);
                 
             }
-            printf("\n");
+            //--printf("\n");
         }
-        printf("\n executing OP_Dxyn");
-        //printf("\n ================================================================Setting video buffer with value, result : %d\n",registers[Vx]);
+        //--printf("\n executing OP_Dxyn");
+        ////--printf("\n ================================================================Setting video buffer with value, result : %d\n",registers[Vx]);
     }
 
     void OP_Ex9E(){
@@ -371,8 +382,8 @@
         if (keypad[key]){
             pc += 2;
         }
-        printf("\n executing OP_Ex9E"); //***************************************************************************************************************************");
-        printf("\n if keypad do pc+=2, pc result : %d ,key : %d\n",pc, key);
+        //--printf("\n executing OP_Ex9E"); //***************************************************************************************************************************");
+        //--printf("\n if keypad do pc+=2, pc result : %d ,key : %d\n",pc, key);
     }
 
     void OP_ExA1(){
@@ -383,16 +394,17 @@
         if (!keypad[key]){
             pc += 2;
         }
-        printf("\n executing OP_Ex9E");//***************************************************************************************************************************");
-        printf("\n if ! keypad do pc+=2, pc result : %d, Key : %d\n",pc, key);
+        //--printf("\n executing OP_Ex9E");//***************************************************************************************************************************");
+        //--printf("\n if ! keypad do pc+=2, pc result : %d, Key : %d\n",pc, key);
     }
 
     void OP_Fx07(){
         uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 
         registers[Vx] = delayTimer;
-        printf("\n executing OP_Fx07");
-        printf("\n setting Vx with delayTime : register Vx %d\n",registers[Vx]);
+        //--printf("\n executing OP_Fx07");
+        //--printf(" ***************************************************************************************************************************");
+        //--printf("\n setting Vx with delayTime : register Vx %d\n",registers[Vx]);
     }
 
     void OP_Fx0A(){
@@ -434,32 +446,33 @@
             pc -= 2;
         }
 
-        printf("\n executing OP_Fx0A");
-        printf("\n capturing keypad and setting it in Vx register : Vx %d\n",registers[Vx]);
+        //--printf("\n executing OP_Fx0A");
+        //--printf("\n capturing keypad and setting it in Vx register : Vx %d\n",registers[Vx]);
     }
 
     void OP_Fx15(){
         uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 
         delayTimer = registers[Vx];
-        printf("\n executing OP_Fx15");
-        printf("\n setting delay timer from Vx register : delayTime %d\n",delayTimer);
+        //--printf("\n executing OP_Fx15");
+        //--printf(" ***************************************************************************************************************************");
+        //--printf("\n setting delay timer from Vx register : delayTime %d\n",delayTimer);
     }
 
     void OP_Fx18(){
         uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 
         soundTimer = registers[Vx];
-        printf("\n executing OP_Fx18");
-        printf("\n setting sound timer from Vx register : %d\n",soundTimer);
+        //--printf("\n executing OP_Fx18");
+        //--printf("\n setting sound timer from Vx register : %d\n",soundTimer);
     }
 
     void OP_Fx1E(){
         uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 
         index += registers[Vx];
-        printf("\n executing OP_Fx1E");
-        printf("\n setting index with += Vx register : index %d\n",index);
+        //--printf("\n executing OP_Fx1E");
+        //--printf("\n setting index with += Vx register : index %d\n",index);
     }
 
     void OP_Fx29(){
@@ -467,8 +480,8 @@
         uint8_t digit = registers[Vx];
 
         index = FONTSET_START_ADDRESS + (5 * digit);
-        printf("\n executing OP_Fx29");
-        printf("\n setting index with digit from Vx register : digit %d\n",digit);
+        //--printf("\n executing OP_Fx29");
+        //--printf("\n setting index with digit from Vx register : digit %d\n",digit);
     }
 
     void OP_Fx33(){
@@ -486,8 +499,8 @@
         // Hundreds-place
         memory[index] = value % 10;
         
-        printf("\n executing OP_Fx33");
-        printf("\n Store BCD representation of Vx in memory locations I, I+1, and I+2 : value %d\n",value);
+        //--printf("\n executing OP_Fx33");
+        //--printf("\n Store BCD representation of Vx in memory locations I, I+1, and I+2 : value %d\n",value);
     }
 
     void OP_Fx55(){
@@ -497,8 +510,8 @@
         {
             memory[index + i] = registers[i];
         }
-        printf("\n executing OP_Fx55");
-        printf("\n assigning memory from index to index+Vx with registers till Vx : Vx address %02hX\n",Vx);
+        //--printf("\n executing OP_Fx55");
+        //--printf("\n assigning memory from index to index+Vx with registers till Vx : Vx address %02hX\n",Vx);
     }
 
     void OP_Fx65(){
@@ -507,8 +520,8 @@
         for (uint8_t i = 0; i <= Vx; ++i){
             registers[i] = memory[index + i];
         }
-        printf("\n executing OP_Fx65");
-        printf("\n assigning registers from 1 to Vx with memory starting from index : starting address %02hX\n",Vx);
+        //--printf("\n executing OP_Fx65");
+        //--printf("\n assigning registers from 1 to Vx with memory starting from index : starting address %02hX\n",Vx);
     }
     
 #pragma endregion
@@ -524,27 +537,27 @@
     Chip8Func tableF[0x65 + 1];
 
     void Table0(){
-        printf("\ncalling %d function in Table0",(opcode & 0x000Fu));
+        //--printf("\ncalling %d function in Table0",(opcode & 0x000Fu));
         (*(table0[opcode & 0x000Fu]))();
     }
 
     void Table8(){
-        printf("\ncalling %d function in Table8",(opcode & 0x000Fu));
+        //--printf("\ncalling %d function in Table8",(opcode & 0x000Fu));
         (*(table8[opcode & 0x000Fu]))();
     }
 
     void TableE(){
-        printf("\ncalling %d function in TableE",(opcode & 0x000Fu));
+        //--printf("\ncalling %d function in TableE",(opcode & 0x000Fu));
         (*(tableE[opcode & 0x000Fu]))();
     }
 
     void TableF(){
-        printf("\ncalling %d function in TableF",(opcode & 0x000Fu));
+        //--printf("\ncalling %d function in TableF",(opcode & 0x000Fu));
         (*(tableF[opcode & 0x00FFu]))();
     }
 
     void OP_NULL(){
-        printf("\nNULLLLLLLLL");
+        //--printf("\nNULLLLLLLLL");
     }
 
 #pragma endregion
@@ -707,34 +720,45 @@
 
 #pragma endregion
 
+void update_timers() {
+    uint64_t current_time = SDL_GetTicks(); // Returns time in ms
+    
+    // 1000ms / 60Hz = ~16.66ms. 
+    // We check if 16ms or more has passed since the last decrement.
+    if (current_time - last_timer_update >= 10) {
+        
+        if ( delayTimer > 0) {
+            delayTimer--;
+        }
+        
+        if (soundTimer > 0) {
+            soundTimer--;
+        }
+
+        // Update the timestamp for the next 16ms window
+        last_timer_update = current_time;
+    }
+}
 
 //CPU Cycle
 void Cycle(){
 	// Fetch
 	opcode = (memory[pc] << 8u) | memory[pc + 1];
 
-    printf("\n Extracted opCode \n");
-    printf("%04hX ", opcode);
-    printf("\n%02hX ", (opcode & 0xF000u) >> 12u);
+    //--printf("\n Extracted opCode \n");
+    //--printf("%04hX ", opcode);
+    //--printf("\n%02hX ", (opcode & 0xF000u) >> 12u);
 	// Increment the PC before we execute anything
 	pc += 2;
 
 	// Decode and Execute
 	(*(table[(opcode & 0xF000u) >> 12u]))();
     
-    printf("Exceuted Function\n");
-	// Decrement the delay timer if it's been set
-	if (delayTimer > 0)
-	{
-		--delayTimer;
-	}
+    //--printf("Exceuted Function\n");
+	
+    update_timers();
 
-	// Decrement the sound timer if it's been set
-	if (soundTimer > 0)
-	{
-		--soundTimer;
-	}
-    printf("Exciting Cycle\n");
+    //--printf("Exciting Cycle\n");
 }
 
 
@@ -743,10 +767,10 @@ void Cycle(){
         
         int startAddress = 0x200;
         pc = startAddress;
-        int cycleDelay = 0;
+        int cycleDelay = 1;
 
         if (argc < 2){
-		    printf("Usage: <ROM> <option: CycleDelay 1-10>\n");
+		    //--printf("Usage: <ROM> <option: CycleDelay 1-10>\n");
 		    exit(EXIT_FAILURE);
 	    }
         char const* romFilename = argv[1];
@@ -765,7 +789,7 @@ void Cycle(){
         // FILE* rom = fopen(".\\knight.ch8", "rb"); // issue when executing this ROM
         
         if(rom == NULL){
-            printf("Unable to load ROM file");
+            //--printf("Unable to load ROM file");
             exit(1);
         }else{
             
@@ -776,7 +800,7 @@ void Cycle(){
             
             char buffer[4096];
             rewind(rom);
-            printf(" Memory contents: \n");
+            //--printf(" Memory contents: \n");
             printMemory();  
             // fgetws(&memory[startAddress], size, rom);
             size_t bytesRead = fread(&buffer, 1, size, rom);
@@ -786,15 +810,15 @@ void Cycle(){
             }
             
             
-            printf("\n\nMemory contents After Loading ROM: \n");
+            //--printf("\n\nMemory contents After Loading ROM: \n");
             // for(int i = 0; i < 4096; i++){
-            //     printf("%02hX ", memory[i]);
-            //     //printf("\n %d : %02hX ",i , memory[i]);
-            //     if( i%50 == 0) printf("\n");
+            //     //--printf("%02hX ", memory[i]);
+            //     ////--printf("\n %d : %02hX ",i , memory[i]);
+            //     if( i%50 == 0) //--printf("\n");
             // }
             printMemory();
             
-            printf("\n\nSucessfully Loaded ROM into Memory\n\n");
+            //--printf("\n\nSucessfully Loaded ROM into Memory\n\n");
         }
     }
     
@@ -823,9 +847,9 @@ void Cycle(){
         for(int i=0; i< FONTSET_SIZE; i++){
             memory[FONTSET_START_ADDRESS+i] = fontset[i];
         }
-        printf("Loaded Fontset\n");
+        //--printf("Loaded Fontset\n");
 
-        printf("\n memory content after loading FONTSET ");
+        //--printf("\n memory content after loading FONTSET ");
         printMemory();
     }
 
@@ -888,10 +912,10 @@ void Cycle(){
     }
 
 
-    printf("Video Scale initialize with arguments passes");
+    //--printf("Video Scale initialize with arguments passes");
     int videoScale = 10;
 
-    printf("\n\nCompleted Video Scale initialize with arguments passes");
+    //--printf("\n\nCompleted Video Scale initialize with arguments passes");
 
 
 
@@ -899,72 +923,74 @@ void Cycle(){
     SDL_Renderer* renderer;
     SDL_Texture* texture;
 
-    printf("\n\nStarting SDL init");
+    //--printf("\n\nStarting SDL init");
     if (SDL_Init(SDL_INIT_VIDEO) == 0) {
-        fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+        printf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return 1;
     }
     window = SDL_CreateWindow("Chip8 Emulator", VIDEO_WIDTH*videoScale, VIDEO_HEIGHT*videoScale, 0);
-    printf("\n\n\nCreated SDL Window");
+    //--printf("\n\n\nCreated SDL Window");
     renderer = SDL_CreateRenderer(window, NULL);
-    printf("\n\n\nCreated SDL Renderer");
+    //--printf("\n\n\nCreated SDL Renderer");
     texture = SDL_CreateTexture(
         renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, VIDEO_WIDTH, VIDEO_HEIGHT);
 
-    printf("\n\n\nCreated SDL Window, Rendere, Texture");
+    //--printf("\n\n\nCreated SDL Window, Rendere, Texture");
 	int videoPitch = sizeof(video[0]) * VIDEO_WIDTH;
-    printf("\n Video Pitch %d",videoPitch);
+    last_timer_update = SDL_GetTicks();
+
+    //--printf("\n Video Pitch %d",videoPitch);
 
     bool quit = false;
 
 	while (!quit)
 	{
-        //printf("\nInside Loop");   
+        ////--printf("\nInside Loop");   
         Sleep(cycleDelay);
-        printf("Cycle Delayed by : %d ", cycleDelay);
+        //--printf("Cycle Delayed by : %d ", cycleDelay);
 
 		quit = ProcessInput(keypad);
 
 		{  
-            // printf("IF -----------------------------------------------------");
+            // //--printf("IF -----------------------------------------------------");
 
 			Cycle();
 
 			//platform.Update(video, videoPitch);
-            printf("\nstarting updation");
+            //--printf("\nstarting updation");
             SDL_UpdateTexture(texture, NULL, video, videoPitch);
-            printf("01");
+            //--printf("01");
             SDL_RenderClear(renderer);
-            printf("02");
+            //--printf("02");
             SDL_RenderTexture(renderer, texture, NULL, NULL);
-            printf("03");
+            //--printf("03");
             SDL_RenderPresent(renderer);
-            printf("04");
+            //--printf("04");
             
             // int videoChanged = 0;
 
             // for(int i =0 ; i < 64 ; i++){
             //     for(int j =0; j< 32; j++){
-            //         //printf("%d ", video[(i*32)+j]);
+            //         ////--printf("%d ", video[(i*32)+j]);
             //         if(video[(i*32)+j] != 0) videoChanged = 1;
             //     }
-            //     //printf("\n");
+            //     ////--printf("\n");
             // }
             // if(videoChanged){
             //     for(int i =0 ; i < 64 ; i++){
             //         for(int j =0; j< 32; j++){
-            //             printf("%d ", video[(i*32)+j]);
+            //             //--printf("%d ", video[(i*32)+j]);
             //             videoChanged = 1;
             //         }
-            //         printf("\n");
+            //         //--printf("\n");
             //     }
             // }
 
-            printRegisters();
+            //printRegisters();
 		}
 	}
 
-    printf("\n\nLoop Exited");
+    //--printf("\n\nLoop Exited");
 
 	return 0;
         
