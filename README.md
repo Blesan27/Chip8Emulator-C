@@ -1,15 +1,16 @@
-CHIP-8 Emulator
+# CHIP-8 Emulator
 
 A CHIP-8 emulator built in C++ that simulates a complete virtual machine, including CPU, memory, stack, timers, input handling, and display rendering.
 
 This project demonstrates low-level system design, instruction decoding, and emulator architecture, similar to how real CPUs execute programs.
 
-Demo
+
+# Demo
 
 Add your actual GIF or video here
 
 
-Features
+# Features
 - Full opcode interpreter (CHIP-8 instruction set)
 - 4KB memory architecture
 - 16 general-purpose registers (V0–VF)
@@ -21,10 +22,10 @@ Features
 - Hex keypad input handling
 - ROM loading and execution
 
-Architecture
+# Architecture
 
 The emulator is structured into modular components:
-
+```text
 +------------------+
 |      Memory      |
 |     (4KB)        |
@@ -48,14 +49,16 @@ The emulator is structured into modular components:
 |     Timers       |
 | (Delay / Sound)  |
 +------------------+
-Key Components
-CPU → Fetches, decodes, executes instructions
-Memory → Stores program + fonts
-Display → Renders sprites
-Input → Maps keyboard to CHIP-8 keypad
-Timers → Handle delay and sound
+```
 
-Instruction Execution Cycle
+# Key Components
+- CPU → Fetches, decodes, executes instructions
+- Memory → Stores program + fonts
+- Display → Renders sprites
+- Input → Maps keyboard to CHIP-8 keypad
+- Timers → Handle delay and sound
+
+# Instruction Execution Cycle
 
 The emulator follows a classic Fetch–Decode–Execute loop:
 
@@ -75,34 +78,43 @@ Increment PC or jump
 Update timers
 
 
-Example ROMs
+# Example ROMs
+
+For testing the Chip-8 Emulator, you can try execute the Test_Opcode ROM
+.\test_opcode.ch8
 
 The emulator successfully runs classic CHIP-8 programs:
 
-- Pong
-- Tetris
+- Super Pong : .\superpong.ch8
+- Tetris : .\Tetris.ch8
+- Slippery Slope : .\slipperslope.ch8
+- OutLaw : .\outlaw.ch8
 
 Running real ROMs validates correctness of instruction handling and rendering.
 
-Tech Stack
-Language: C++
-Graphics/Input: SDL2
+# Tech Stack
 
-How to Run
+Language: C
+Graphics/Input: SDL3
+
+
+# How to Run
 git clone thisrepo
 cd chip8-emulator
 ./Emulator.exe path/to/rom
 
-Key Learnings
-Low-level system emulation and CPU design
-Instruction decoding using bitwise operations
-Memory and register management
-Real-time rendering with SDL2
-Event-driven input handling
-Debugging stateful systems
 
-Challenges
-Correct opcode implementation and quirks
-Synchronizing timers with execution cycle
-Accurate sprite rendering and collision detection
-Mapping keyboard input to CHIP-8 keypad
+# Key Learnings
+- Low-level system emulation and CPU design
+- Instruction decoding using bitwise operations
+- Memory and register management
+- Real-time rendering with SDL2
+- Event-driven input handling
+- Debugging stateful systems
+
+
+# Challenges
+- Correct opcode implementation and quirks
+- Synchronizing timers with execution cycle
+- Accurate sprite rendering and collision detection
+- Mapping keyboard input to CHIP-8 keypad
