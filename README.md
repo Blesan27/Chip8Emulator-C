@@ -7,7 +7,7 @@ This project demonstrates low-level system design, instruction decoding, and emu
 
 # Demo
 
-Add your actual GIF or video here
+To Add GIF of game 
 
 
 # Features
