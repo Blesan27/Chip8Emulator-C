@@ -81,14 +81,14 @@ The emulator follows a classic Fetch–Decode–Execute loop:
 # Example ROMs
 
 For testing the Chip-8 Emulator, you can try execute the Test_Opcode ROM <br>
-[a relative link](.\test_opcode.ch8)
+[test_opcode.ch8](test_opcode.ch8)
 
 The emulator successfully runs classic CHIP-8 programs:
 
-- Super Pong : [a relative link](.\superpong.ch8)
-- Tetris : [a relative link](.\Tetris.ch8)
-- Slippery Slope : [a relative link](.\slipperslope.ch8)
-- OutLaw : [a relative link](.\outlaw.ch8)
+- Super Pong : [superpong.ch8](superpong.ch8)
+- Tetris : [Tetris.ch8](Tetris.ch8)
+- Slippery Slope : [slipperslope.ch8](slipperslope.ch8)
+- OutLaw : [outlaw.ch8](outlaw.ch8)
 
 Running real ROMs validates correctness of instruction handling and rendering.
 
