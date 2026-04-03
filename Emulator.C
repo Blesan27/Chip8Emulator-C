@@ -14,20 +14,21 @@
 #define VIDEO_WIDTH 64
 #define VIDEO_HEIGHT 32
 
+#define START_ADDRESS 0x200
 
 
-    uint8_t  registers[16];
+    uint8_t registers[16];
     wchar_t memory[4098];
+    uint8_t sp;
+    uint8_t delayTimer;
+    uint8_t soundTimer;
+    uint8_t keypad[16];
     uint16_t index;
     uint16_t pc;
-    uint16_t  stack[16];
-    uint8_t  sp;
-    uint8_t  delayTimer;
-    uint8_t  soundTimer;
-    uint8_t  keypad[16];
-    uint32_t  video[64*32];
-    uint16_t  opcode;
-
+    uint16_t stack[16];
+    uint32_t video[64*32];
+    uint16_t opcode;
+    
     uint64_t last_timer_update = 0;
 
 
@@ -721,9 +722,9 @@
 #pragma endregion
 
 void update_timers() {
-    uint64_t current_time = SDL_GetTicks(); // Returns time in ms
+    uint64_t current_time = SDL_GetTicks();
     
-    // 1000ms / 60Hz = ~16.66ms. 
+    // 1000ms / 60Hz ~16.66ms. 
     // We check if 16ms or more has passed since the last decrement.
     if (current_time - last_timer_update >= 10) {
         
@@ -734,45 +735,46 @@ void update_timers() {
         if (soundTimer > 0) {
             soundTimer--;
         }
-
-        // Update the timestamp for the next 16ms window
+        
         last_timer_update = current_time;
     }
 }
 
 //CPU Cycle
 void Cycle(){
-	// Fetch
+    // Fetch
 	opcode = (memory[pc] << 8u) | memory[pc + 1];
-
+    
     //--printf("\n Extracted opCode \n");
     //--printf("%04hX ", opcode);
     //--printf("\n%02hX ", (opcode & 0xF000u) >> 12u);
 	// Increment the PC before we execute anything
 	pc += 2;
-
+    
 	// Decode and Execute
 	(*(table[(opcode & 0xF000u) >> 12u]))();
     
     //--printf("Exceuted Function\n");
 	
     update_timers();
-
+    
     //--printf("Exciting Cycle\n");
 }
 
 
 
-    int main(int argc, char * argv[]){
-        
-        int startAddress = 0x200;
-        pc = startAddress;
-        int cycleDelay = 1;
-
-        if (argc < 2){
-		    //--printf("Usage: <ROM> <option: CycleDelay 1-10>\n");
-		    exit(EXIT_FAILURE);
-	    }
+int main(int argc, char * argv[]){
+    
+    int startAddress = START_ADDRESS;
+    pc = startAddress;
+    int cycleDelay = 1;
+    int videoScale = 10;
+    int videoPitch = sizeof(video[0]) * VIDEO_WIDTH;
+    
+    if (argc < 2){
+        printf("Usage: <ROM> <option: CycleDelay 1-10>\n");
+        exit(EXIT_FAILURE);
+    }
         char const* romFilename = argv[1];
         //Loading ROM
         if(argc == 3){
@@ -781,12 +783,6 @@ void Cycle(){
     {
         
         FILE* rom = fopen( romFilename , "rb");
-        // FILE* rom = fopen(".\\1-chip8-logo.ch8", "rb");
-        // FILE* rom = fopen(".\\test_opcode.ch8", "rb");
-        // FILE* rom = fopen(".\\Tetris.ch8", "rb");
-        // FILE* rom = fopen(".\\horseyJump.ch8", "rb");
-        // FILE* rom = fopen(".\\octojam6title.ch8", "rb");
-        // FILE* rom = fopen(".\\knight.ch8", "rb"); // issue when executing this ROM
         
         if(rom == NULL){
             printf("Unable to load ROM file");
@@ -802,7 +798,7 @@ void Cycle(){
             rewind(rom);
             printf(" Memory contents: \n");
             printMemory();  
-            // fgetws(&memory[startAddress], size, rom);
+            
             size_t bytesRead = fread(&buffer, 1, size, rom);
 
             for (long i = 0; i < size; ++i) {
@@ -811,11 +807,7 @@ void Cycle(){
             
             
             printf("\n\nMemory contents After Loading ROM: \n");
-            // for(int i = 0; i < 4096; i++){
-            //     //--printf("%02hX ", memory[i]);
-            //     ////--printf("\n %d : %02hX ",i , memory[i]);
-            //     if( i%50 == 0) //--printf("\n");
-            // }
+            
             printMemory();
             
             printf("\n\nSucessfully Loaded ROM into Memory\n\n");
@@ -849,7 +841,7 @@ void Cycle(){
         }
         printf("Loaded Fontset\n");
 
-        printf("\n memory content after loading FONTSET ");
+        printf("\n Memory content after loading FONTSET ");
         printMemory();
     }
 
@@ -912,13 +904,7 @@ void Cycle(){
     }
 
 
-    //--printf("Video Scale initialize with arguments passes");
-    int videoScale = 10;
-
-    //--printf("\n\nCompleted Video Scale initialize with arguments passes");
-
-
-
+    //SDL Initialization
     SDL_Window* window;
     SDL_Renderer* renderer;
     SDL_Texture* texture;
@@ -930,45 +916,32 @@ void Cycle(){
     }
     window = SDL_CreateWindow("Chip8 Emulator", VIDEO_WIDTH*videoScale, VIDEO_HEIGHT*videoScale, 0);
     printf("\n\n\nCreated SDL Window");
+    
     renderer = SDL_CreateRenderer(window, NULL);
-    //--printf("\n\n\nCreated SDL Renderer");
-    texture = SDL_CreateTexture(
-        renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, VIDEO_WIDTH, VIDEO_HEIGHT);
+    
+    texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, VIDEO_WIDTH, VIDEO_HEIGHT);
 
-    //--printf("\n\n\nCreated SDL Window, Rendere, Texture");
-	int videoPitch = sizeof(video[0]) * VIDEO_WIDTH;
     last_timer_update = SDL_GetTicks();
 
-    //--printf("\n Video Pitch %d",videoPitch);
 
     bool quit = false;
-
-	while (!quit)
-	{
-        ////--printf("\nInside Loop");   
+	while (!quit){
+        
         Sleep(cycleDelay);
-        //--printf("Cycle Delayed by : %d ", cycleDelay);
 
 		quit = ProcessInput(keypad);
 
-		{  
-            // //--printf("IF -----------------------------------------------------");
-
-			Cycle();
-
-			//platform.Update(video, videoPitch);
-            //--printf("\nstarting updation");
-            SDL_UpdateTexture(texture, NULL, video, videoPitch);
-            //--printf("01");
-            SDL_RenderClear(renderer);
-            //--printf("02");
-            SDL_RenderTexture(renderer, texture, NULL, NULL);
-            //--printf("03");
-            SDL_RenderPresent(renderer);
-            //--printf("04");
-            
-            //printRegisters();
-		}
+        Cycle();
+        //--printf("\nStarting updation");
+        SDL_UpdateTexture(texture, NULL, video, videoPitch);
+        
+        SDL_RenderClear(renderer);
+        
+        SDL_RenderTexture(renderer, texture, NULL, NULL);
+        
+        SDL_RenderPresent(renderer);
+        
+        //printRegisters();
 	}
 
     //--printf("\n\nLoop Exited");
