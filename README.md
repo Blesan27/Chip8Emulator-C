@@ -63,24 +63,24 @@ The emulator is structured into modular components:
 The emulator follows a classic Fetch–Decode–Execute loop:
 
 1. Fetch
-Read 2-byte opcode from memory using the Program Counter (PC)
+    - Read 2-byte opcode from memory using the Program Counter (PC)
 2. Decode
-Extract instruction components using bitwise operations
-(e.g., 0x6XNN, 0xDXYN)
+    - Extract instruction components using bitwise operations
+    - (e.g., 0x6XNN, 0xDXYN)
 3. Execute
-Perform operation:
-Register updates
-Memory access
-Drawing sprites
-Handling input
+    - Perform operation:
+    - Register updates
+    - Memory access
+    - Drawing sprites
+    - Handling input
 4. Update
-Increment PC or jump
-Update timers
+    - Increment PC or jump
+    - Update timers
 
 
 # Example ROMs
 
-For testing the Chip-8 Emulator, you can try execute the Test_Opcode ROM
+For testing the Chip-8 Emulator, you can try execute the Test_Opcode ROM <br>
 .\test_opcode.ch8
 
 The emulator successfully runs classic CHIP-8 programs:
@@ -94,15 +94,16 @@ Running real ROMs validates correctness of instruction handling and rendering.
 
 # Tech Stack
 
-Language: C
+Language: C <br>
 Graphics/Input: SDL3
 
 
 # How to Run
+```bash
 git clone thisrepo
 cd chip8-emulator
 ./Emulator.exe path/to/rom
-
+```
 
 # Key Learnings
 - Low-level system emulation and CPU design
