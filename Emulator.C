@@ -37,7 +37,7 @@
             //printf("\n %d : %02hX ",i , memory[i]);
             if( i%50 == 0) printf("\n");    
         }
-        //--printf("\n");
+        printf("\n");
     }
     void printRegisters(){
         for(int i = 0; i< 16 ; i++){
@@ -789,7 +789,7 @@ void Cycle(){
         // FILE* rom = fopen(".\\knight.ch8", "rb"); // issue when executing this ROM
         
         if(rom == NULL){
-            //--printf("Unable to load ROM file");
+            printf("Unable to load ROM file");
             exit(1);
         }else{
             
@@ -800,7 +800,7 @@ void Cycle(){
             
             char buffer[4096];
             rewind(rom);
-            //--printf(" Memory contents: \n");
+            printf(" Memory contents: \n");
             printMemory();  
             // fgetws(&memory[startAddress], size, rom);
             size_t bytesRead = fread(&buffer, 1, size, rom);
@@ -810,7 +810,7 @@ void Cycle(){
             }
             
             
-            //--printf("\n\nMemory contents After Loading ROM: \n");
+            printf("\n\nMemory contents After Loading ROM: \n");
             // for(int i = 0; i < 4096; i++){
             //     //--printf("%02hX ", memory[i]);
             //     ////--printf("\n %d : %02hX ",i , memory[i]);
@@ -818,7 +818,7 @@ void Cycle(){
             // }
             printMemory();
             
-            //--printf("\n\nSucessfully Loaded ROM into Memory\n\n");
+            printf("\n\nSucessfully Loaded ROM into Memory\n\n");
         }
     }
     
@@ -847,9 +847,9 @@ void Cycle(){
         for(int i=0; i< FONTSET_SIZE; i++){
             memory[FONTSET_START_ADDRESS+i] = fontset[i];
         }
-        //--printf("Loaded Fontset\n");
+        printf("Loaded Fontset\n");
 
-        //--printf("\n memory content after loading FONTSET ");
+        printf("\n memory content after loading FONTSET ");
         printMemory();
     }
 
@@ -923,13 +923,13 @@ void Cycle(){
     SDL_Renderer* renderer;
     SDL_Texture* texture;
 
-    //--printf("\n\nStarting SDL init");
+    printf("\n\nStarting SDL init");
     if (SDL_Init(SDL_INIT_VIDEO) == 0) {
         printf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return 1;
     }
     window = SDL_CreateWindow("Chip8 Emulator", VIDEO_WIDTH*videoScale, VIDEO_HEIGHT*videoScale, 0);
-    //--printf("\n\n\nCreated SDL Window");
+    printf("\n\n\nCreated SDL Window");
     renderer = SDL_CreateRenderer(window, NULL);
     //--printf("\n\n\nCreated SDL Renderer");
     texture = SDL_CreateTexture(
@@ -967,25 +967,6 @@ void Cycle(){
             SDL_RenderPresent(renderer);
             //--printf("04");
             
-            // int videoChanged = 0;
-
-            // for(int i =0 ; i < 64 ; i++){
-            //     for(int j =0; j< 32; j++){
-            //         ////--printf("%d ", video[(i*32)+j]);
-            //         if(video[(i*32)+j] != 0) videoChanged = 1;
-            //     }
-            //     ////--printf("\n");
-            // }
-            // if(videoChanged){
-            //     for(int i =0 ; i < 64 ; i++){
-            //         for(int j =0; j< 32; j++){
-            //             //--printf("%d ", video[(i*32)+j]);
-            //             videoChanged = 1;
-            //         }
-            //         //--printf("\n");
-            //     }
-            // }
-
             //printRegisters();
 		}
 	}
