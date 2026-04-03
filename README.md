@@ -1,6 +1,6 @@
 # CHIP-8 Emulator
 
-A CHIP-8 emulator built in C++ that simulates a complete virtual machine, including CPU, memory, stack, timers, input handling, and display rendering.
+A CHIP-8 emulator built in C that simulates a complete virtual machine, including CPU, memory, stack, timers, input handling, and display rendering.
 
 This project demonstrates low-level system design, instruction decoding, and emulator architecture, similar to how real CPUs execute programs.
 
