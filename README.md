@@ -7,14 +7,10 @@ This project demonstrates low-level system design, instruction decoding, and emu
 
 # Demo
 
-![Brix Demo](./GameRecordings/chip8Brix.gif)
-![Space Invaders Demo](./GameRecordings/chip8Invaders.gif)
-![OutLaw Demo](./GameRecordings/chip8outlaw.gif)
-![Blitz Demo](./GameRecordings/chip8Blitz.gif)
-![SlipperySlop Demo](./GameRecordings/chip8splipperyslop.gif)
-![SuperPong Demo](./GameRecordings/chip8SuperPongGIF.gif)
-![Tank Demo](./GameRecordings/chip8Tank.gif)
-![Tetris Demo](./GameRecordings/chip8Tetris.gif)
+![Brix Demo](./GameRecordings/chip8Brix.gif) ![Space Invaders Demo](./GameRecordings/chip8Invaders.gif)
+![OutLaw Demo](./GameRecordings/chip8outlaw.gif) ![Blitz Demo](./GameRecordings/chip8Blitz.gif)
+![SlipperySlop Demo](./GameRecordings/chip8splipperyslop.gif) ![SuperPong Demo](./GameRecordings/chip8SuperPongGIF.gif)
+![Tank Demo](./GameRecordings/chip8Tank.gif) ![Tetris Demo](./GameRecordings/chip8Tetris.gif)
 
 
 # Features
